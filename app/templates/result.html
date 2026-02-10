@@ -3,94 +3,196 @@
 {% block title %}Roast Score: {{ score or '?' }}/100 — Roast My Code{% endblock %}
 
 {% block meta %}
-<meta property="og:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score &#x1F525;">
+<meta property="og:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score">
 <meta property="og:description" content="{{ preview }}">
 <meta property="og:url" content="{{ request.url }}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score &#x1F525;">
+<meta name="twitter:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score">
 <meta name="twitter:description" content="{{ preview }}">
 {% endblock %}
 
 {% block content %}
-<section class="result-page {% if mode == 'serious' %}result-serious{% endif %}">
+<div class="flex-grow pt-12 pb-24 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
 
-    <!-- Score Display -->
-    {% if score is not none %}
-    <div class="score-display">
-        <div class="score-gauge" id="score-gauge" data-score="{{ score }}">
-            <svg viewBox="0 0 200 120" class="gauge-svg">
-                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a1a2e" stroke-width="12" stroke-linecap="round"/>
-                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gauge-gradient)" stroke-width="12" stroke-linecap="round"
-                      class="gauge-fill" id="gauge-fill"/>
-                <defs>
-                    <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color: #22c55e"/>
-                        <stop offset="50%" style="stop-color: #f59e0b"/>
-                        <stop offset="100%" style="stop-color: #ef4444"/>
-                    </linearGradient>
-                </defs>
-            </svg>
-            <div class="score-number" id="score-number">0</div>
-            <div class="score-label">/100</div>
+    {% if score is not none and score >= 90 and mode == 'roast' %}
+    <!-- BRUTAL MODE: Catastrophic Failure Banner -->
+    <div class="mb-8 flex flex-col items-center">
+        <div class="inline-flex items-center gap-4 bg-red-600/20 border border-red-500 px-6 py-2 rounded-full mb-4 animate-pulse">
+            <iconify-icon icon="lucide:radiation" class="text-red-500 text-xl"></iconify-icon>
+            <span class="display-font text-red-500 font-black tracking-widest text-lg">CATASTROPHIC FAILURE</span>
+            <iconify-icon icon="lucide:radiation" class="text-red-500 text-xl"></iconify-icon>
         </div>
-        <p class="score-description" id="score-description">
+        <h2 class="display-font text-xl text-white/40 tracking-[0.5em] uppercase">Code Crime Scene</h2>
+    </div>
+    {% endif %}
+
+    <!-- Score Header -->
+    {% if score is not none %}
+    <div class="flex flex-col items-center mb-16 text-center">
+        <div class="relative w-64 h-32 mb-4">
+            <!-- Gauge SVG -->
+            <svg viewBox="0 0 100 50" class="w-full h-full transform transition-transform hover:scale-105 duration-500">
+                <defs>
+                    {% if score >= 90 and mode == 'roast' %}
+                    <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#450a0a"/>
+                        <stop offset="60%" style="stop-color:#991b1b"/>
+                        <stop offset="100%" style="stop-color:#ef4444"/>
+                    </linearGradient>
+                    {% else %}
+                    <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#22c55e"/>
+                        <stop offset="50%" style="stop-color:#eab308"/>
+                        <stop offset="100%" style="stop-color:#ef4444"/>
+                    </linearGradient>
+                    {% endif %}
+                </defs>
+                <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#1a1a1a" stroke-width="8" stroke-linecap="round"/>
+                <path id="score-path" d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="url(#gaugeGradient)" stroke-width="8" stroke-linecap="round"
+                      style="stroke-dasharray: 126; stroke-dashoffset: 126; transition: stroke-dashoffset 2s cubic-bezier(0.34, 1.56, 0.64, 1);"/>
+            </svg>
+            {% if score >= 90 and mode == 'roast' %}
+            <!-- Ember particles for brutal mode -->
+            <div class="absolute inset-0 pointer-events-none overflow-visible">
+                <div class="absolute top-1/2 left-1/4 w-2 h-2 bg-red-500 rounded-full" style="animation: ember-float 3s infinite; opacity: 0;"></div>
+                <div class="absolute top-1/2 left-3/4 w-1 h-1 bg-orange-400 rounded-full" style="animation: ember-float 4s infinite 0.5s; opacity: 0;"></div>
+                <div class="absolute top-1/2 left-1/2 w-1.5 h-1.5 bg-red-600 rounded-full" style="animation: ember-float 2.5s infinite 1s; opacity: 0;"></div>
+            </div>
+            {% endif %}
+            <div class="absolute bottom-0 left-0 right-0 flex flex-col items-center">
+                {% if score >= 90 and mode == 'roast' %}
+                <span class="display-font text-7xl font-black text-red-500 leading-none" id="score-number" style="animation: alarm-pulse 1.5s infinite, shake 0.2s infinite;">0</span>
+                <span class="text-sm font-bold uppercase tracking-widest text-red-500/60 mt-2">Violation Severity</span>
+                {% elif score <= 25 %}
+                <span class="display-font text-6xl font-black text-green-400 leading-none fire-glow-filter" id="score-number">0</span>
+                <span class="text-sm font-bold uppercase tracking-widest text-green-400/60 mt-1">Impressive</span>
+                {% else %}
+                <span class="display-font text-6xl font-black leading-none fire-glow-filter" id="score-number">0</span>
+                <span class="text-sm font-bold uppercase tracking-widest text-white/40 mt-1">Roast Score</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <p class="text-white/60 mt-6 max-w-xl text-lg">
             {% if score <= 25 %}
-                Honestly impressive. You might already be using AI.
+                Honestly, this looks like you might already be using an AI assistant. Or you're just that good.
             {% elif score <= 50 %}
-                Not terrible. Room for improvement though.
+                Not terrible. Room for improvement, but you've got the basics down.
             {% elif score <= 75 %}
-                Your code needs some serious help.
+                Your code needs some serious help. But hey, that's what we're here for.
+            {% elif score < 90 %}
+                This code is a masterclass in what not to do. Let an AI ride shotgun next time.
             {% else %}
-                Mass casualty code detected.
+                Your code is a violation of the Geneva Convention. We've notified the authorities.
             {% endif %}
         </p>
     </div>
     {% endif %}
 
-    <!-- Roast Content -->
-    <div class="roast-output">
-        <div class="roast-content">
+    <!-- Roast Results Card -->
+    <div class="glass-card rounded-3xl p-8 md:p-12 mb-8 relative overflow-hidden {% if score is not none and score >= 90 and mode == 'roast' %}border-red-500/30{% endif %}">
+        {% if score is not none and score >= 90 and mode == 'roast' %}
+        <!-- Hazard stripes for brutal mode -->
+        <div class="absolute top-0 right-0 w-32 h-6 hazard-stripes rotate-45 translate-x-10 translate-y-2 shadow-lg z-10"></div>
+        <div class="absolute bottom-0 left-0 w-32 h-6 hazard-stripes rotate-45 -translate-x-10 -translate-y-2 shadow-lg z-10"></div>
+        {% endif %}
+
+        <!-- Meta Row -->
+        <div class="flex flex-wrap gap-4 mb-10 pb-8 border-b border-white/10">
+            <div class="flex items-center gap-2">
+                <iconify-icon icon="lucide:code-2" class="text-[#FF6B35]"></iconify-icon>
+                <span class="text-xs font-bold uppercase tracking-widest text-white/60">{{ roast.language_detected or 'unknown' }}</span>
+            </div>
+            <div class="w-px h-4 bg-white/10 self-center"></div>
+            <div class="flex items-center gap-2">
+                {% if mode == 'roast' %}
+                <iconify-icon icon="lucide:flame" class="text-[#FF6B35]"></iconify-icon>
+                <span class="text-xs font-bold uppercase tracking-widest text-white/60">Roast Mode</span>
+                {% else %}
+                <iconify-icon icon="lucide:clipboard-check" class="text-blue-400"></iconify-icon>
+                <span class="text-xs font-bold uppercase tracking-widest text-white/60">Serious Review</span>
+                {% endif %}
+            </div>
+            {% if roast.severity and mode == 'roast' %}
+            <div class="w-px h-4 bg-white/10 self-center"></div>
+            <div class="flex items-center gap-2">
+                <iconify-icon icon="lucide:gauge" class="text-yellow-400"></iconify-icon>
+                <span class="text-xs font-bold uppercase tracking-widest text-white/60">{{ roast.severity }}</span>
+            </div>
+            {% endif %}
+            <div class="ml-auto flex items-center gap-2">
+                <iconify-icon icon="lucide:clock" class="text-white/30"></iconify-icon>
+                <span class="text-xs font-medium text-white/30">{{ roast.created_at }}</span>
+            </div>
+        </div>
+
+        <!-- Rendered Roast Content -->
+        <div class="prose max-w-none">
             {{ roast_content | safe }}
         </div>
-    </div>
 
-    <!-- Code (if public) -->
-    {% if roast.code_content %}
-    <details class="code-reveal">
-        <summary>View the code that earned this score</summary>
-        <pre class="code-block"><code>{{ roast.code_content }}</code></pre>
-    </details>
-    {% endif %}
-
-    <!-- Meta Info -->
-    <div class="roast-meta">
-        <span>{{ roast.language_detected or 'unknown' }}</span>
-        <span>&middot;</span>
-        <span>{{ roast.mode }}{% if roast.severity and roast.mode == 'roast' %} ({{ roast.severity }}){% endif %}</span>
-        <span>&middot;</span>
-        <span>{{ roast.created_at }}</span>
-    </div>
-
-    <!-- Actions -->
-    <div class="result-actions">
-        <button class="btn btn-share" onclick="copyShareLink()" id="share-btn">
-            Share This Roast &#x1F517;
-        </button>
-        <a href="https://twitter.com/intent/tweet?text=My%20code%20got%20a%20{{ score or '?' }}%2F100%20Roast%20Score%20%F0%9F%94%A5&url={{ request.url | urlencode }}" target="_blank" class="btn btn-twitter">
-            Share on X
-        </a>
-        <a href="/" class="btn btn-secondary">Roast Again</a>
-        {% if mode == 'roast' %}
-        <a href="/" class="btn btn-secondary">Get a Serious Review</a>
-        {% else %}
-        <a href="/" class="btn btn-secondary">Try a Roast Instead</a>
+        <!-- Collapsible Code Section -->
+        {% if roast.code_content %}
+        <div class="mt-12">
+            <details class="group">
+                <summary class="list-none cursor-pointer flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all">
+                    <span class="text-sm font-bold uppercase tracking-widest flex items-center gap-2">
+                        <iconify-icon icon="lucide:file-code" class="text-blue-400"></iconify-icon>
+                        View Original Code
+                    </span>
+                    <iconify-icon icon="lucide:chevron-down" class="group-open:rotate-180 transition-transform"></iconify-icon>
+                </summary>
+                <div class="mt-4 code-block">
+                    <pre><code>{{ roast.code_content }}</code></pre>
+                </div>
+            </details>
+        </div>
         {% endif %}
     </div>
 
-    <!-- Toast notification for copy -->
-    <div class="toast" id="copy-toast" style="display: none;">Link copied!</div>
-</section>
+    <!-- Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {% if score is not none and score >= 90 and mode == 'roast' %}
+        <button onclick="copyShareLink()" id="btn-share-roast" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-gradient-to-r from-red-600 to-red-800 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-red-500/20">
+            <iconify-icon icon="lucide:share-2"></iconify-icon>
+            Broadcast the Shame
+        </button>
+        {% else %}
+        <button onclick="copyShareLink()" id="btn-share-roast" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-purple-500/20">
+            <iconify-icon icon="lucide:share-2"></iconify-icon>
+            Share This Roast
+        </button>
+        {% endif %}
+        <a href="https://twitter.com/intent/tweet?text=My%20code%20got%20a%20{{ score or '?' }}%2F100%20Roast%20Score%20%F0%9F%94%A5&url={{ request.url | urlencode }}" target="_blank" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#1DA1F2] hover:bg-[#1a91da] hover:scale-[1.02] active:scale-95 transition-all">
+            <iconify-icon icon="ri:twitter-x-fill"></iconify-icon>
+            Share on X
+        </a>
+        <a href="/" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-white/10 border border-white/10 hover:bg-white/20 transition-all">
+            <iconify-icon icon="lucide:rotate-ccw"></iconify-icon>
+            Roast Again
+        </a>
+        {% if mode == 'roast' %}
+        <a href="/" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#FF6B35]/10 border border-[#FF6B35]/20 text-[#FF6B35] hover:bg-[#FF6B35]/20 transition-all">
+            <iconify-icon icon="lucide:shield-check"></iconify-icon>
+            Serious Review
+        </a>
+        {% else %}
+        <a href="/" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#FF6B35]/10 border border-[#FF6B35]/20 text-[#FF6B35] hover:bg-[#FF6B35]/20 transition-all">
+            <iconify-icon icon="lucide:flame"></iconify-icon>
+            Try a Roast
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="copy-toast" class="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] hidden">
+    <div class="glass-card toast-visible px-6 py-3 rounded-full flex items-center gap-3 border-[#FF6B35]/30 shadow-2xl shadow-orange-500/10">
+        <iconify-icon icon="lucide:check-circle-2" class="text-green-500 text-xl"></iconify-icon>
+        <span class="text-sm font-medium">Roast link copied to clipboard!</span>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -98,9 +200,38 @@
 function copyShareLink() {
     navigator.clipboard.writeText(window.location.href).then(() => {
         const toast = document.getElementById('copy-toast');
-        toast.style.display = 'block';
-        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        toast.classList.remove('hidden');
+        setTimeout(() => { toast.classList.add('hidden'); }, 3000);
     });
 }
+
+// Animate score gauge on load
+window.addEventListener('load', () => {
+    const score = {{ score or 0 }};
+    const path = document.getElementById('score-path');
+    const scoreNum = document.getElementById('score-number');
+    if (!path || !scoreNum) return;
+
+    // Animate gauge fill
+    const maxDash = 126;
+    const fillAmount = (score / 100) * maxDash;
+    setTimeout(() => {
+        path.style.strokeDashoffset = maxDash - fillAmount;
+    }, 100);
+
+    // Animate number counting up
+    let current = 0;
+    const duration = 1500;
+    const startTime = performance.now();
+    function animateNumber(timestamp) {
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        current = Math.round(eased * score);
+        scoreNum.textContent = current;
+        if (progress < 1) requestAnimationFrame(animateNumber);
+    }
+    requestAnimationFrame(animateNumber);
+});
 </script>
 {% endblock %}

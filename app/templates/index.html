@@ -3,100 +3,204 @@
 {% block title %}Roast My Code — AI Code Review with Attitude{% endblock %}
 
 {% block content %}
-<section class="hero">
-    <h1 class="hero-title">Roast My Code</h1>
-    <p class="hero-subtitle">Paste your puny human-written code. An AI will tell you what you did wrong.</p>
-</section>
+<div class="w-full max-w-4xl mx-auto px-6 py-12 flex flex-col items-center gap-12">
 
-<section class="roast-form-section">
-    <form method="POST" action="/roast" id="roast-form" class="roast-form">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        <!-- Mode Toggle -->
-        <div class="mode-toggle">
-            <button type="button" class="mode-btn active" data-mode="roast" id="mode-roast">
-                <span class="mode-icon">&#x1F525;</span> Roast Mode
-            </button>
-            <button type="button" class="mode-btn" data-mode="serious" id="mode-serious">
-                <span class="mode-icon">&#x1F4CB;</span> Serious Review
-            </button>
-            <input type="hidden" name="mode" id="mode-input" value="roast">
+    <!-- Hero -->
+    <header class="text-center space-y-4">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#FF6B35]/30 bg-[#FF6B35]/10 text-[#FF6B35] text-xs font-bold uppercase tracking-widest animate-pulse">
+            <iconify-icon icon="lucide:sparkles"></iconify-icon> AI Roast Engine Active
         </div>
+        <h1 class="text-7xl md:text-8xl font-extrabold tracking-tighter leading-none">
+            Roast My <span class="text-transparent bg-clip-text fire-gradient">Code</span>.
+        </h1>
+        <p class="text-xl text-white/50 max-w-xl mx-auto">
+            Paste your puny human-written code. Our superior AI will dissect your logic and crush your ego in milliseconds.
+        </p>
+    </header>
 
-        <!-- Severity Selector (roast mode only) -->
-        <div class="severity-selector" id="severity-selector">
-            <label class="severity-label">Severity Level:</label>
-            <div class="severity-options">
-                <label class="severity-option">
-                    <input type="radio" name="severity" value="gentle">
-                    <span class="severity-chip">Gentle &#x1F60F;</span>
+    <!-- Form -->
+    <section class="w-full space-y-6">
+        <form method="POST" action="/roast" id="roast-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <!-- Code Input -->
+            <div class="relative w-full group mb-6">
+                <div class="absolute -inset-1 fire-gradient opacity-20 blur-2xl group-hover:opacity-30 transition-opacity"></div>
+                <div class="relative flex flex-col glass rounded-3xl overflow-hidden">
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                        </div>
+                        <div class="mono text-xs text-white/30 uppercase tracking-widest">Input Buffer</div>
+                        <div class="text-xs mono text-white/40" id="code-stats">
+                            <span id="char-count">0</span> chars / <span id="line-count">0</span> lines
+                        </div>
+                    </div>
+                    <textarea
+                        name="code"
+                        id="code-input"
+                        class="w-full h-80 bg-transparent p-8 mono text-lg text-[#FF6B35] focus:outline-none placeholder:text-white/10 resize-none"
+                        placeholder="// Paste your puny human-written code here. Let's see what you've done."
+                        spellcheck="false"
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Controls Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Severity -->
+                <div class="space-y-3">
+                    <label class="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Select Toxicity Level</label>
+                    <div class="flex flex-wrap gap-2" id="severity-selector">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="severity" value="gentle" class="hidden peer">
+                            <span class="px-4 py-2 rounded-xl glass hover:bg-white/10 transition-all text-sm font-bold flex items-center gap-2 border-white/10 peer-checked:border-2 peer-checked:border-[#FF6B35] peer-checked:bg-[#FF6B35]/10 peer-checked:text-[#FF6B35] peer-checked:shadow-[0_0_15px_rgba(255,107,53,0.2)]">Gentle &#x1F60F;</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="severity" value="normal" class="hidden peer" checked>
+                            <span class="px-4 py-2 rounded-xl glass hover:bg-white/10 transition-all text-sm font-bold flex items-center gap-2 border-white/10 peer-checked:border-2 peer-checked:border-[#FF6B35] peer-checked:bg-[#FF6B35]/10 peer-checked:text-[#FF6B35] peer-checked:shadow-[0_0_15px_rgba(255,107,53,0.2)]">Normal &#x1F525;</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="severity" value="brutal" class="hidden peer">
+                            <span class="px-4 py-2 rounded-xl glass hover:bg-white/10 transition-all text-sm font-bold flex items-center gap-2 border-white/10 peer-checked:border-2 peer-checked:border-[#FF6B35] peer-checked:bg-[#FF6B35]/10 peer-checked:text-[#FF6B35] peer-checked:shadow-[0_0_15px_rgba(255,107,53,0.2)]">Brutal &#x1F480;</span>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="severity" value="unhinged" class="hidden peer">
+                            <span class="px-4 py-2 rounded-xl glass hover:bg-white/10 transition-all text-sm font-bold flex items-center gap-2 border-red-500/50 text-red-400 peer-checked:border-2 peer-checked:border-red-500 peer-checked:bg-red-500/10 peer-checked:text-red-400 relative overflow-hidden">Unhinged &#x1F92F;<div class="absolute inset-0 bg-red-500/10 animate-flicker pointer-events-none"></div></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="space-y-3">
+                    <label class="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Modality</label>
+                    <div class="flex p-1 bg-white/5 rounded-2xl border border-white/10">
+                        <button type="button" id="mode-roast" class="flex-1 py-2 rounded-xl bg-white/10 text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all">
+                            <iconify-icon icon="lucide:flame" class="text-[#FF6B35]"></iconify-icon> Roast Mode
+                        </button>
+                        <button type="button" id="mode-serious" class="flex-1 py-2 rounded-xl text-white/40 text-sm font-bold flex items-center justify-center gap-2 hover:text-white transition-all">
+                            <iconify-icon icon="lucide:clipboard-check"></iconify-icon> Serious Review
+                        </button>
+                    </div>
+                    <input type="hidden" name="mode" id="mode-input" value="roast">
+                </div>
+            </div>
+
+            <!-- Options & Submit -->
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 pt-4">
+                <label class="flex items-center gap-3 cursor-pointer group">
+                    <input type="checkbox" name="is_public" checked class="w-5 h-5 rounded accent-[#FF6B35] bg-white/5 border-white/20">
+                    <span class="text-sm text-white/60 font-medium group-hover:text-white transition-colors">Share publicly</span>
                 </label>
-                <label class="severity-option">
-                    <input type="radio" name="severity" value="normal" checked>
-                    <span class="severity-chip active">Normal &#x1F525;</span>
-                </label>
-                <label class="severity-option">
-                    <input type="radio" name="severity" value="brutal">
-                    <span class="severity-chip">Brutal &#x1F480;</span>
-                </label>
-                <label class="severity-option">
-                    <input type="radio" name="severity" value="unhinged">
-                    <span class="severity-chip">Unhinged &#x1F92F;</span>
-                </label>
+                <button type="submit" id="submit-btn" class="w-full md:w-auto px-10 py-5 rounded-2xl fire-gradient text-white font-black text-xl flex items-center justify-center gap-3 fire-glow hover:scale-[1.02] active:scale-95 transition-all">
+                    <span id="btn-text">ROAST MY HUMAN CODE</span>
+                    <span id="btn-loading" class="hidden">Analyzing your human craftsmanship...</span>
+                    <iconify-icon icon="lucide:flame" class="text-2xl" id="btn-icon"></iconify-icon>
+                </button>
+            </div>
+
+            <div id="validation-error" class="hidden mt-4 flex items-center gap-3 px-6 py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm font-medium"></div>
+        </form>
+    </section>
+
+    <!-- Recent Roasts Feed -->
+    {% if recent_roasts %}
+    <section class="w-full mt-24 space-y-8">
+        <div class="flex items-end justify-between">
+            <div class="space-y-1">
+                <h2 class="text-4xl font-extrabold tracking-tight uppercase italic">Fresh Burns</h2>
+                <p class="text-white/40">Real-time suffering from fellow developers.</p>
             </div>
         </div>
-
-        <!-- Code Input -->
-        <div class="code-input-wrapper">
-            <textarea
-                name="code"
-                id="code-input"
-                class="code-input"
-                placeholder="Paste your puny human-written code here. Let's see what you've done."
-                rows="16"
-                spellcheck="false"
-            ></textarea>
-            <div class="code-stats" id="code-stats">
-                <span id="char-count">0</span> chars &middot;
-                <span id="line-count">0</span> lines
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for roast in recent_roasts %}
+            <a href="/roast/{{ roast.share_id }}" class="glass p-6 rounded-3xl space-y-4 hover:border-white/30 transition-colors group block">
+                <div class="flex justify-between items-start">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br {% if roast.roast_score and roast.roast_score > 70 %}from-red-500 to-orange-500{% elif roast.roast_score and roast.roast_score > 40 %}from-orange-400 to-yellow-500{% else %}from-green-400 to-emerald-500{% endif %}"></div>
+                        <div>
+                            <div class="text-sm font-bold">{{ roast.language_detected or 'unknown' }}</div>
+                            <div class="text-[10px] mono text-white/30 uppercase">{{ roast.mode }}</div>
+                        </div>
+                    </div>
+                    <div class="px-3 py-1 rounded-lg {% if roast.roast_score and roast.roast_score > 70 %}bg-red-500/20 text-red-500{% elif roast.roast_score and roast.roast_score > 40 %}bg-orange-500/20 text-orange-400{% else %}bg-green-500/20 text-green-400{% endif %} text-xs font-black mono">
+                        {{ roast.roast_score or '?' }}/100
+                    </div>
+                </div>
+                <p class="text-sm italic leading-relaxed text-white/60 line-clamp-2">{{ roast.preview }}...</p>
+            </a>
+            {% endfor %}
         </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}
 
-        <!-- Options Row -->
-        <div class="form-options">
-            <label class="option-check">
-                <input type="checkbox" name="is_public" checked>
-                <span>Share publicly</span>
-            </label>
-        </div>
+{% block scripts %}
+<script>
+const MAX_CHARS = 15000;
+const MAX_LINES = 500;
 
-        <!-- Submit -->
-        <button type="submit" class="btn btn-submit" id="submit-btn">
-            <span class="btn-text">Roast My Human Code &#x1F525;</span>
-            <span class="btn-loading" style="display: none;">Analyzing your human craftsmanship...</span>
-        </button>
+// Mode toggle
+document.getElementById('mode-roast').addEventListener('click', function() {
+    this.classList.add('bg-white/10', 'shadow-sm');
+    this.classList.remove('text-white/40');
+    const serious = document.getElementById('mode-serious');
+    serious.classList.remove('bg-white/10', 'shadow-sm');
+    serious.classList.add('text-white/40');
+    document.getElementById('mode-input').value = 'roast';
+    document.getElementById('severity-selector').parentElement.style.display = '';
+    document.getElementById('btn-text').textContent = 'ROAST MY HUMAN CODE';
+});
 
-        <div class="validation-error" id="validation-error" style="display: none;"></div>
-    </form>
-</section>
+document.getElementById('mode-serious').addEventListener('click', function() {
+    this.classList.add('bg-white/10', 'shadow-sm');
+    this.classList.remove('text-white/40');
+    const roast = document.getElementById('mode-roast');
+    roast.classList.remove('bg-white/10', 'shadow-sm');
+    roast.classList.add('text-white/40');
+    document.getElementById('mode-input').value = 'serious';
+    document.getElementById('severity-selector').parentElement.style.display = 'none';
+    document.getElementById('btn-text').textContent = 'START SERIOUS REVIEW';
+});
 
-{% if recent_roasts %}
-<section class="recent-roasts">
-    <h2 class="section-title">Recent Roasts</h2>
-    <div class="roast-feed">
-        {% for roast in recent_roasts %}
-        <a href="/roast/{{ roast.share_id }}" class="roast-card">
-            <div class="roast-card-header">
-                <span class="roast-card-score {% if roast.roast_score and roast.roast_score > 70 %}score-high{% elif roast.roast_score and roast.roast_score > 40 %}score-mid{% else %}score-low{% endif %}">
-                    {{ roast.roast_score or '?' }}/100
-                </span>
-                <span class="roast-card-lang">{{ roast.language_detected or 'unknown' }}</span>
-                <span class="roast-card-mode">{{ roast.mode }}</span>
-            </div>
-            <p class="roast-card-preview">{{ roast.preview }}...</p>
-        </a>
-        {% endfor %}
-    </div>
-</section>
-{% endif %}
+// Code stats
+const codeInput = document.getElementById('code-input');
+const charCount = document.getElementById('char-count');
+const lineCount = document.getElementById('line-count');
+const codeStats = document.getElementById('code-stats');
+
+function updateStats() {
+    const code = codeInput.value;
+    charCount.textContent = code.length.toLocaleString();
+    lineCount.textContent = code ? code.split('\n').length : 0;
+    if (code.length > MAX_CHARS * 0.9 || code.split('\n').length > MAX_LINES * 0.9) {
+        codeStats.classList.add('text-red-400');
+        codeStats.classList.remove('text-white/40');
+    } else {
+        codeStats.classList.remove('text-red-400');
+        codeStats.classList.add('text-white/40');
+    }
+}
+codeInput.addEventListener('input', updateStats);
+codeInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') { e.preventDefault(); const s=codeInput.selectionStart; const end=codeInput.selectionEnd; codeInput.value=codeInput.value.substring(0,s)+'    '+codeInput.value.substring(end); codeInput.selectionStart=codeInput.selectionEnd=s+4; updateStats(); }
+});
+
+// Form submit
+document.getElementById('roast-form').addEventListener('submit', (e) => {
+    const code = codeInput.value;
+    const errDiv = document.getElementById('validation-error');
+    if (!code.trim()) { e.preventDefault(); errDiv.textContent="Paste some code first. We can't roast nothing."; errDiv.classList.remove('hidden'); return; }
+    if (code.length > MAX_CHARS) { e.preventDefault(); errDiv.textContent=`Too long (${code.length.toLocaleString()} chars). Max is ${MAX_CHARS.toLocaleString()}.`; errDiv.classList.remove('hidden'); return; }
+    if (code.split('\n').length > MAX_LINES) { e.preventDefault(); errDiv.textContent=`Too many lines. Max is ${MAX_LINES}. Paste the worst part.`; errDiv.classList.remove('hidden'); return; }
+    errDiv.classList.add('hidden');
+    document.getElementById('submit-btn').disabled = true;
+    document.getElementById('btn-text').classList.add('hidden');
+    document.getElementById('btn-icon').classList.add('hidden');
+    document.getElementById('btn-loading').classList.remove('hidden');
+});
+</script>
 {% endblock %}
