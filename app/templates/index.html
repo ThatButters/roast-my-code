@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Roast My Code — AI Code Review with Attitude{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <h1 class="hero-title">Roast My Code</h1>
+    <p class="hero-subtitle">Paste your puny human-written code. An AI will tell you what you did wrong.</p>
+</section>
+
+<section class="roast-form-section">
+    <form method="POST" action="/roast" id="roast-form" class="roast-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+            <button type="button" class="mode-btn active" data-mode="roast" id="mode-roast">
+                <span class="mode-icon">&#x1F525;</span> Roast Mode
+            </button>
+            <button type="button" class="mode-btn" data-mode="serious" id="mode-serious">
+                <span class="mode-icon">&#x1F4CB;</span> Serious Review
+            </button>
+            <input type="hidden" name="mode" id="mode-input" value="roast">
+        </div>
+
+        <!-- Severity Selector (roast mode only) -->
+        <div class="severity-selector" id="severity-selector">
+            <label class="severity-label">Severity Level:</label>
+            <div class="severity-options">
+                <label class="severity-option">
+                    <input type="radio" name="severity" value="gentle">
+                    <span class="severity-chip">Gentle &#x1F60F;</span>
+                </label>
+                <label class="severity-option">
+                    <input type="radio" name="severity" value="normal" checked>
+                    <span class="severity-chip active">Normal &#x1F525;</span>
+                </label>
+                <label class="severity-option">
+                    <input type="radio" name="severity" value="brutal">
+                    <span class="severity-chip">Brutal &#x1F480;</span>
+                </label>
+                <label class="severity-option">
+                    <input type="radio" name="severity" value="unhinged">
+                    <span class="severity-chip">Unhinged &#x1F92F;</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Code Input -->
+        <div class="code-input-wrapper">
+            <textarea
+                name="code"
+                id="code-input"
+                class="code-input"
+                placeholder="Paste your puny human-written code here. Let's see what you've done."
+                rows="16"
+                spellcheck="false"
+            ></textarea>
+            <div class="code-stats" id="code-stats">
+                <span id="char-count">0</span> chars &middot;
+                <span id="line-count">0</span> lines
+            </div>
+        </div>
+
+        <!-- Options Row -->
+        <div class="form-options">
+            <label class="option-check">
+                <input type="checkbox" name="is_public" checked>
+                <span>Share publicly</span>
+            </label>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn btn-submit" id="submit-btn">
+            <span class="btn-text">Roast My Human Code &#x1F525;</span>
+            <span class="btn-loading" style="display: none;">Analyzing your human craftsmanship...</span>
+        </button>
+
+        <div class="validation-error" id="validation-error" style="display: none;"></div>
+    </form>
+</section>
+
+{% if recent_roasts %}
+<section class="recent-roasts">
+    <h2 class="section-title">Recent Roasts</h2>
+    <div class="roast-feed">
+        {% for roast in recent_roasts %}
+        <a href="/roast/{{ roast.share_id }}" class="roast-card">
+            <div class="roast-card-header">
+                <span class="roast-card-score {% if roast.roast_score and roast.roast_score > 70 %}score-high{% elif roast.roast_score and roast.roast_score > 40 %}score-mid{% else %}score-low{% endif %}">
+                    {{ roast.roast_score or '?' }}/100
+                </span>
+                <span class="roast-card-lang">{{ roast.language_detected or 'unknown' }}</span>
+                <span class="roast-card-mode">{{ roast.mode }}</span>
+            </div>
+            <p class="roast-card-preview">{{ roast.preview }}...</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}

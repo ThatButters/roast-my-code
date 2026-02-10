@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Roast My Code</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0e0; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        h1 { color: #ff6b35; margin-bottom: 20px; }
+        h2 { color: #ff8c5a; margin: 30px 0 15px; border-bottom: 1px solid #2a2a3e; padding-bottom: 8px; }
+        a { color: #ff6b35; }
+
+        .flash { padding: 10px 15px; margin-bottom: 15px; border-radius: 6px; }
+        .flash-success { background: #1a3a2a; color: #4ade80; border: 1px solid #22543d; }
+        .flash-error { background: #3a1a1a; color: #f87171; border: 1px solid #7f1d1d; }
+
+        /* Dashboard Cards */
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .card { background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 8px; padding: 20px; }
+        .card-label { font-size: 12px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+        .card-value { font-size: 28px; font-weight: 700; color: #ff6b35; margin-top: 5px; }
+        .card-sub { font-size: 12px; color: #666; margin-top: 4px; }
+
+        /* Budget Bar */
+        .budget-bar { background: #2a2a3e; border-radius: 4px; height: 20px; overflow: hidden; margin-top: 8px; }
+        .budget-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .budget-ok { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .budget-warn { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .budget-danger { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        /* Config Table */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #2a2a3e; }
+        th { background: #1a1a2e; color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        td { font-size: 14px; }
+        tr:hover { background: #1a1a2e; }
+
+        input[type="text"], input[type="number"] { background: #0f0f1a; border: 1px solid #2a2a3e; color: #e0e0e0; padding: 6px 10px; border-radius: 4px; width: 100%; }
+        input:focus { outline: none; border-color: #ff6b35; }
+
+        .btn { display: inline-block; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; text-decoration: none; }
+        .btn-primary { background: #ff6b35; color: #fff; }
+        .btn-primary:hover { background: #ff8c5a; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-danger:hover { background: #f87171; }
+        .btn-success { background: #22c55e; color: #fff; }
+
+        .kill-switch { display: inline-flex; align-items: center; gap: 10px; padding: 10px 20px; background: #1a1a2e; border: 1px solid #2a2a3e; border-radius: 8px; margin-bottom: 20px; }
+        .kill-switch .status { font-weight: 700; }
+        .kill-switch .status.on { color: #4ade80; }
+        .kill-switch .status.off { color: #ef4444; }
+
+        .score-cell { font-weight: 700; }
+        .score-high { color: #ef4444; }
+        .score-mid { color: #f59e0b; }
+        .score-low { color: #22c55e; }
+    </style>
+</head>
+<body>
+    <h1>&#x1F525; Roast My Code — Admin</h1>
+    <p><a href="/">&larr; Back to site</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- Dashboard -->
+    <h2>Dashboard</h2>
+    <div class="dashboard">
+        <div class="card">
+            <div class="card-label">Month Spend</div>
+            <div class="card-value">${{ "%.2f" | format(current_spend / 100) }}</div>
+            <div class="card-sub">of ${{ "%.2f" | format(budget_limit / 100) }} budget</div>
+            <div class="budget-bar">
+                <div class="budget-fill {% if budget_pct >= 90 %}budget-danger{% elif budget_pct >= 70 %}budget-warn{% else %}budget-ok{% endif %}"
+                     style="width: {{ [budget_pct, 100] | min }}%"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-label">Roasts This Month</div>
+            <div class="card-value">{{ roast_count }}</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Projected Spend</div>
+            <div class="card-value">${{ "%.2f" | format(projected / 100) }}</div>
+            <div class="card-sub">at current rate</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Budget Used</div>
+            <div class="card-value">{{ "%.1f" | format(budget_pct) }}%</div>
+        </div>
+    </div>
+
+    <!-- Kill Switch -->
+    <h2>Kill Switch</h2>
+    <div class="kill-switch">
+        <span>Roasting is currently:</span>
+        {% set roasting_enabled = config | selectattr('key', 'equalto', 'enable_roasting') | first %}
+        {% if roasting_enabled and roasting_enabled.value == 'true' %}
+            <span class="status on">ENABLED</span>
+            <form method="POST" action="/admin/config" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="config_enable_roasting" value="false">
+                <button type="submit" class="btn btn-danger">Disable</button>
+            </form>
+        {% else %}
+            <span class="status off">DISABLED</span>
+            <form method="POST" action="/admin/config" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="config_enable_roasting" value="true">
+                <button type="submit" class="btn btn-success">Enable</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <!-- Config Editor -->
+    <h2>Configuration</h2>
+    <form method="POST" action="/admin/config">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <table>
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Value</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in config %}
+                <tr>
+                    <td><code>{{ item.key }}</code></td>
+                    <td><input type="text" name="config_{{ item.key }}" value="{{ item.value }}"></td>
+                    <td>{{ item.description or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Save Configuration</button>
+    </form>
+
+    <!-- Monthly History -->
+    <h2>Monthly History</h2>
+    {% if monthly_history %}
+    <table>
+        <thead>
+            <tr><th>Month</th><th>Spent</th><th>Roasts</th><th>Avg Cost</th></tr>
+        </thead>
+        <tbody>
+            {% for m in monthly_history %}
+            <tr>
+                <td>{{ m.month }}</td>
+                <td>${{ "%.2f" | format(m.spent_cents / 100) }}</td>
+                <td>{{ m.roast_count }}</td>
+                <td>${{ "%.4f" | format(m.spent_cents / m.roast_count / 100) if m.roast_count > 0 else '0.0000' }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #666;">No data yet.</p>
+    {% endif %}
+
+    <!-- Recent Roast Log -->
+    <h2>Recent Roasts</h2>
+    {% if recent_logs %}
+    <div style="overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th><th>Time</th><th>Mode</th><th>Severity</th>
+                <th>Lang</th><th>Score</th><th>Tokens</th><th>Cost</th><th>Model</th><th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in recent_logs %}
+            <tr>
+                <td>{{ log.id }}</td>
+                <td>{{ log.created_at }}</td>
+                <td>{{ log.mode }}</td>
+                <td>{{ log.severity }}</td>
+                <td>{{ log.language_detected }}</td>
+                <td class="score-cell {% if log.roast_score and log.roast_score > 70 %}score-high{% elif log.roast_score and log.roast_score > 40 %}score-mid{% else %}score-low{% endif %}">
+                    {{ log.roast_score or '-' }}
+                </td>
+                <td>{{ (log.input_tokens_actual or 0) + (log.output_tokens_actual or 0) }}</td>
+                <td>${{ "%.4f" | format((log.cost_cents or 0) / 100) }}</td>
+                <td>{{ log.model }}</td>
+                <td>{% if log.share_id %}<a href="/roast/{{ log.share_id }}">view</a>{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <p style="color: #666;">No roasts yet.</p>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Roast Score: {{ score or '?' }}/100 — Roast My Code{% endblock %}
+
+{% block meta %}
+<meta property="og:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score &#x1F525;">
+<meta property="og:description" content="{{ preview }}">
+<meta property="og:url" content="{{ request.url }}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score &#x1F525;">
+<meta name="twitter:description" content="{{ preview }}">
+{% endblock %}
+
+{% block content %}
+<section class="result-page {% if mode == 'serious' %}result-serious{% endif %}">
+
+    <!-- Score Display -->
+    {% if score is not none %}
+    <div class="score-display">
+        <div class="score-gauge" id="score-gauge" data-score="{{ score }}">
+            <svg viewBox="0 0 200 120" class="gauge-svg">
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#1a1a2e" stroke-width="12" stroke-linecap="round"/>
+                <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="url(#gauge-gradient)" stroke-width="12" stroke-linecap="round"
+                      class="gauge-fill" id="gauge-fill"/>
+                <defs>
+                    <linearGradient id="gauge-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color: #22c55e"/>
+                        <stop offset="50%" style="stop-color: #f59e0b"/>
+                        <stop offset="100%" style="stop-color: #ef4444"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            <div class="score-number" id="score-number">0</div>
+            <div class="score-label">/100</div>
+        </div>
+        <p class="score-description" id="score-description">
+            {% if score <= 25 %}
+                Honestly impressive. You might already be using AI.
+            {% elif score <= 50 %}
+                Not terrible. Room for improvement though.
+            {% elif score <= 75 %}
+                Your code needs some serious help.
+            {% else %}
+                Mass casualty code detected.
+            {% endif %}
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Roast Content -->
+    <div class="roast-output">
+        <div class="roast-content">
+            {{ roast_content | safe }}
+        </div>
+    </div>
+
+    <!-- Code (if public) -->
+    {% if roast.code_content %}
+    <details class="code-reveal">
+        <summary>View the code that earned this score</summary>
+        <pre class="code-block"><code>{{ roast.code_content }}</code></pre>
+    </details>
+    {% endif %}
+
+    <!-- Meta Info -->
+    <div class="roast-meta">
+        <span>{{ roast.language_detected or 'unknown' }}</span>
+        <span>&middot;</span>
+        <span>{{ roast.mode }}{% if roast.severity and roast.mode == 'roast' %} ({{ roast.severity }}){% endif %}</span>
+        <span>&middot;</span>
+        <span>{{ roast.created_at }}</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="result-actions">
+        <button class="btn btn-share" onclick="copyShareLink()" id="share-btn">
+            Share This Roast &#x1F517;
+        </button>
+        <a href="https://twitter.com/intent/tweet?text=My%20code%20got%20a%20{{ score or '?' }}%2F100%20Roast%20Score%20%F0%9F%94%A5&url={{ request.url | urlencode }}" target="_blank" class="btn btn-twitter">
+            Share on X
+        </a>
+        <a href="/" class="btn btn-secondary">Roast Again</a>
+        {% if mode == 'roast' %}
+        <a href="/" class="btn btn-secondary">Get a Serious Review</a>
+        {% else %}
+        <a href="/" class="btn btn-secondary">Try a Roast Instead</a>
+        {% endif %}
+    </div>
+
+    <!-- Toast notification for copy -->
+    <div class="toast" id="copy-toast" style="display: none;">Link copied!</div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function copyShareLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        const toast = document.getElementById('copy-toast');
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    });
+}
+</script>
+{% endblock %}

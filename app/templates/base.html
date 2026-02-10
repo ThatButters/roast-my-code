@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="roast">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Roast My Code{% endblock %}</title>
+    <meta name="description" content="Paste your puny human-written code. An AI will tell you what you did wrong.">
+    {% block meta %}{% endblock %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="nav-logo">
+            <span class="logo-fire">&#x1F525;</span> Roast My Code
+        </a>
+        <div class="nav-right">
+            {% if remaining_roasts is defined %}
+            <span class="roasts-remaining" title="Roasts remaining today">
+                {{ remaining_roasts }} roasts left today
+            </span>
+            {% endif %}
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% if error %}
+    <div class="error-page">
+        <h1>{{ error }}</h1>
+        <a href="/" class="btn btn-primary">Back to Home</a>
+    </div>
+    {% else %}
+    <main class="main">
+        {% block content %}{% endblock %}
+    </main>
+    {% endif %}
+
+    <footer class="footer">
+        <span>Powered by <strong>Claude</strong></span>
+        <span class="footer-sep">&middot;</span>
+        <span>Built with questionable taste and genuine AI</span>
+    </footer>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
