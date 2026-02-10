@@ -1,6 +1,7 @@
 """Layered rate limiting: session -> IP ceiling -> global cap."""
 
 import hashlib
+import os
 from datetime import date, datetime, timedelta
 
 from flask import session, request
@@ -10,9 +11,20 @@ from app.config import get_config
 
 
 def get_ip_hash() -> str:
-    """Hash the IP. Never store raw IPs."""
-    ip = request.headers.get('X-Forwarded-For', request.remote_addr or '127.0.0.1')
-    ip = ip.split(',')[0].strip()
+    """Hash the IP. Never store raw IPs.
+
+    Uses X-Forwarded-For only when TRUSTED_PROXY_COUNT is set (i.e. behind
+    a known reverse proxy). Otherwise falls back to remote_addr to prevent
+    IP spoofing via forged headers.
+    """
+    trusted_proxies = int(os.environ.get('TRUSTED_PROXY_COUNT', '0'))
+    if trusted_proxies > 0 and request.access_route:
+        # access_route is the X-Forwarded-For chain; pick the client IP
+        # by counting back from the rightmost (closest to our proxy)
+        idx = max(0, len(request.access_route) - trusted_proxies)
+        ip = request.access_route[idx]
+    else:
+        ip = request.remote_addr or '127.0.0.1'
     return hashlib.sha256(ip.encode()).hexdigest()[:16]
 
 

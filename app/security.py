@@ -42,7 +42,8 @@ def validate_input(code: str) -> tuple[bool, str]:
 def render_roast_markdown(text: str) -> str:
     """Convert markdown to sanitized HTML."""
     html = md.markdown(text, extensions=['fenced_code', 'codehilite', 'tables'])
-    return bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS, strip=True)
+    return bleach.clean(html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRS,
+                        protocols=['http', 'https', 'mailto'], strip=True)
 
 
 def generate_share_id(length: int = 8) -> str:

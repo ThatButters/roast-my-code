@@ -1,5 +1,6 @@
 """Routes: landing, result, admin, health."""
 
+import hmac
 import os
 import secrets
 import logging
@@ -164,7 +165,8 @@ def register_routes(app):
             budget_ok = check_budget()[0]
             return jsonify({"status": "ok", "roasting_enabled": budget_ok}), 200
         except Exception as e:
-            return jsonify({"status": "error", "detail": str(e)}), 500
+            logger.error("Health check failed: %s", e)
+            return jsonify({"status": "error"}), 500
 
     # --- Admin Routes ---
 
@@ -172,9 +174,12 @@ def register_routes(app):
         """Basic auth decorator for admin routes."""
         @wraps(f)
         def decorated(*args, **kwargs):
-            admin_password = os.environ.get('ADMIN_PASSWORD', 'changeme')
+            admin_password = os.environ.get('ADMIN_PASSWORD')
+            if not admin_password:
+                logger.error("ADMIN_PASSWORD not set — admin panel disabled")
+                abort(403)
             auth = request.authorization
-            if not auth or auth.password != admin_password:
+            if not auth or not hmac.compare_digest(auth.password, admin_password):
                 return Response(
                     'Admin access required.',
                     401,
