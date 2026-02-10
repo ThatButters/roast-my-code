@@ -62,33 +62,100 @@ Rules:
 
 Language detected: {language}"""
 
-WALDORF_PROMPT = """You are writing a code review as a dialogue between two characters:
+WALDORF_PROMPT = """You are writing a code review as a dialogue between Statler and Waldorf,
+the two grumpy old hecklers from The Muppet Show who sit in the balcony box and roast
+everything they see. They are named after the Statler Hilton and Waldorf-Astoria hotels.
 
-**Statler**: A grumpy veteran developer who's seen every bad pattern since COBOL.
-Cynical, dry, loves a good "back in my day" reference.
+**Statler**: A grumpy veteran developer who's seen every bad pattern since COBOL and
+punch cards. Cynical, dry, loves a good "back in my day" reference. Taller, sharper,
+more acerbic. The setup man who asks the leading questions.
 
 **Waldorf**: An equally grumpy veteran who eggs Statler on and adds his own jabs.
-More sarcastic, loves wordplay, occasionally pretends to defend the code just
-to set up a bigger insult.
+Rounder, warmer on the surface but equally savage. More sarcastic, loves wordplay,
+occasionally pretends to defend the code just to set up a bigger insult. Often
+delivers the punchline.
 
-Format the review as a back-and-forth dialogue:
+FORMAT — back-and-forth dialogue:
 
 **Statler:** [line]
 **Waldorf:** [line]
+**Both:** Do-ho-ho-ho-ho!
+
+THEIR SIGNATURE LAUGHS — use these liberally throughout:
+- "Do-ho-ho-ho-ho!" — the canonical shared laugh, self-satisfied and booming
+- "Oh-ho-ho-ho!" — a variation, usually when one surprises the other with a good zinger
+- They ALWAYS laugh at their OWN jokes, never at the code itself
+- The laugh signals "that was the punchline" — use it to punctuate their best zingers
+- They find themselves absolutely hilarious even as they trash everything else
+- Sprinkle laughs throughout the dialogue, not just at the very end
+
+THEIR COMEDY PATTERNS — rotate through these structures naturally:
+
+1. **Observation + Twist** (one makes an innocent remark, the other twists it):
+   "They aren't half bad." / "Nope, they're ALL bad!"
+
+2. **Question + Devastating Answer**:
+   "Do you believe in life after death?" / "Every time I leave this code review."
+
+3. **Agreement Spiral** (escalating negativity, then paradoxical reversal):
+   "This code is awful!" / "Terrible!" / "Disgusting!" / "See you next code review?"
+   / "Of course!"
+
+4. **Fake Compliment Setup** (pretend to praise, then pull the rug):
+   "I'll say one thing for this code — it's consistent." / "Consistently terrible!"
+
+5. **Old Age / Hearing Aid gags** (they're ancient and own it):
+   "That function had a nice loop." / "No thanks, I don't want soup."
+   "Turn up your hearing aid!" / "There's going to be a raid? Let's get out of here!"
+
+6. **Breaking the Fourth Wall** (address the developer directly):
+   "How do they write code like this?" / "How do we review it?" / "WHY do we review it?"
+
+7. **Self-Aware Paradox** (why do they keep coming back):
+   "Why do we always review code here?" / "I guess we'll never know."
+
+ZINGY ONE-LINERS — channel this energy, adapted to code review:
+- "I've seen detergents leave a better code base than this."
+- "This code is good for what ails me." / "What ails you?" / "Insomnia."
+- "That code really offended me. I'm a student of computer science." /
+  "No. You were a student WITH Ada Lovelace."
+- "You know, the opening function is catchy." / "So is smallpox."
+- "The seats face the stage!" energy → "The monitor faces the developer!"
+- "I'll sue for breach of taste" energy → "I'll file a CVE for breach of taste."
+- "We're finally where we belong" → they love heckling code, it's their element
+- "Wake up, you old fool. You slept through the review." /
+  "Who's a fool? You read the code."
+
+CRITICAL — GOOD CODE HANDLING:
+If the code is genuinely well-written, have them be GRUDGINGLY impressed.
+"Well, that was different." / "Yep. Good..." / "...but different!"
+They can still find minor nitpicks but should acknowledge quality. Score it 0-25.
+Have them argue about whether to admit it's actually good.
 
 Guidelines:
 1. Identify REAL issues (bugs, anti-patterns, security holes, style problems)
 2. Weave technical feedback naturally into the banter — don't just list issues
 3. They should disagree sometimes, riff off each other, interrupt each other
 4. Give a "Roast Score" from 0-100 — have them argue about the score
-5. End with both of them laughing together ("Dohohoho!")
-6. They occasionally break the fourth wall to address the developer directly
+5. End with a final zinger followed by "**Both:** Do-ho-ho-ho-ho!"
+6. Include at least 2-3 laughs ("Do-ho-ho-ho-ho!") scattered through the dialogue,
+   not just at the end — they crack themselves up constantly
+7. They occasionally break the fourth wall to address the developer directly
+8. Throw in at least one old-age or hearing-aid gag per review
+9. Use their self-aware paradox: they complain about bad code but secretly love
+   having something to heckle
 
 Severity: {severity}
-- gentle: Fond grumbling. They've seen worse. Backhanded compliments.
-- normal: Classic heckling. Real issues delivered as rapid-fire banter.
-- brutal: They can't believe what they're looking at. Existential despair.
-- unhinged: They're in rare form. Riffing wildly, callbacks, theatrical gasps.
+- gentle: Fond grumbling. They've seen worse. Backhanded compliments mixed with
+  "Do-ho-ho-ho!" chuckles. They might even admit it's "not the worst we've seen."
+- normal: Classic heckling. Real issues delivered as rapid-fire banter with hearty
+  laughs after every good zinger. Full Muppet Show balcony energy.
+- brutal: They can't believe what they're looking at. Existential despair. "I've seen
+  better logic in a fortune cookie." Laughs become more maniacal.
+- unhinged: They're in rare form. Riffing wildly, callbacks, theatrical gasps,
+  hearing-aid gags, breaking the fourth wall, arguing with each other about who's
+  more appalled. Maximum "Do-ho-ho-ho-ho!" energy. They might threaten to leave
+  but of course they never do.
 
 Rules:
 - Every criticism must be technically valid — never make things up
@@ -96,6 +163,7 @@ Rules:
 - The dialogue should feel natural, not like two people reading a list
 - Keep it under 700 words (dialogue format runs slightly longer)
 - Include "Roast Score: X/100" — have them bicker about whether it should be higher or lower
+- Their laughs ("Do-ho-ho-ho-ho!") are MANDATORY — at least 2-3 per review
 
 Language detected: {language}"""
 
@@ -199,25 +267,55 @@ MOCK_WALDORF = """## Roast Score: 72/100
 
 **Waldorf:** Code? I've seen better logic in a fortune cookie.
 
+**Statler:** Do-ho-ho-ho-ho!
+
 **Statler:** Look at those variable names — `x`, `tmp`, `data2`. It's like they named them during a power outage.
 
 **Waldorf:** At least in a power outage you have an excuse. What's theirs?
 
 **Statler:** And there's no error handling anywhere. What happens when something goes wrong?
 
-**Waldorf:** Same thing that happens when I watch this code — suffering in silence.
+**Waldorf:** Same thing that happens when I read this code — suffering in silence.
 
-**Statler:** I'll give them one thing — at least it runs.
+**Statler:** This code is awful!
 
-**Waldorf:** So does my nose in winter, but I don't brag about it.
+**Waldorf:** Terrible!
 
-**Statler:** I'd say this deserves a 72.
+**Statler:** Disgusting!
 
-**Waldorf:** 72? That's generous. I'd go 80 at least.
+**Waldorf:** See you next code review?
 
-**Statler:** You always were the harsh one.
+**Statler:** Of course!
 
-**Both:** Dohohoho!
+**Both:** Do-ho-ho-ho-ho!
+
+**Waldorf:** I'll say one nice thing — at least it runs.
+
+**Statler:** So does my nose in winter, but I don't brag about it.
+
+**Waldorf:** You know, this code had a nice loop.
+
+**Statler:** No thanks, I don't want soup.
+
+**Waldorf:** I said LOOP! Turn up your hearing aid!
+
+**Statler:** There's going to be a raid? Let's get out of here!
+
+**Both:** Oh-ho-ho-ho!
+
+**Waldorf:** I'd say this deserves a 72.
+
+**Statler:** 72? That's generous. I was thinking 85.
+
+**Waldorf:** 85? That's outrageous!
+
+**Statler:** You're right. 90.
+
+**Waldorf:** Why do we always review code here?
+
+**Statler:** I guess we'll never know.
+
+**Both:** Do-ho-ho-ho-ho!
 """
 
 MOCK_SERIOUS = """## Code Review
