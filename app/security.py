@@ -13,9 +13,8 @@ BLOCKLIST = {'ass', 'fuk', 'fck', 'nig', 'fag', 'cum', 'sex', 'wtf', 'die', 'kys
 
 # Allowed HTML tags in rendered roast markdown
 ALLOWED_TAGS = ['p', 'h1', 'h2', 'h3', 'h4', 'strong', 'em', 'code', 'pre',
-                'ul', 'ol', 'li', 'br', 'blockquote', 'hr', 'a', 'span']
+                'ul', 'ol', 'li', 'br', 'blockquote', 'hr', 'span']
 ALLOWED_ATTRS = {
-    'a': ['href', 'title'],
     'code': ['class'],
     'span': ['class'],
 }
