@@ -13,7 +13,7 @@ from flask import (
 from app.db import get_db
 from app.config import get_config, set_config, get_all_config
 from app.budget import check_budget, record_cost, get_month_spend, get_month_roast_count, get_monthly_history
-from app.rate_limit import check_rate_limit, record_usage, get_remaining_roasts
+from app.rate_limit import check_rate_limit, record_usage, get_remaining_roasts, get_ip_hash
 from app.roaster import roast_code
 from app.security import validate_input, render_roast_markdown, generate_share_id, get_roast_preview
 
@@ -58,7 +58,7 @@ def register_routes(app):
         is_public = request.form.get('is_public') == 'on'
 
         # Validate mode and severity
-        if mode not in ('roast', 'serious'):
+        if mode not in ('roast', 'waldorf', 'serious'):
             mode = 'roast'
         if severity not in ('gentle', 'normal', 'brutal', 'unhinged'):
             severity = 'normal'
@@ -108,7 +108,7 @@ def register_routes(app):
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 session.get('session_id'),
-                None,
+                get_ip_hash(),
                 len(code),
                 len(code.split('\n')),
                 result['input_tokens'],

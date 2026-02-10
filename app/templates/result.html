@@ -3,12 +3,20 @@
 {% block title %}Roast Score: {{ score or '?' }}/100 — Roast My Code{% endblock %}
 
 {% block meta %}
-<meta property="og:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score">
+{% if mode == 'waldorf' %}
+<meta property="og:title" content="Two grumpy developers rated my code {{ score or '?' }}/100 &#x1F474;&#x1F474;">
+{% else %}
+<meta property="og:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score &#x1F525;">
+{% endif %}
 <meta property="og:description" content="{{ preview }}">
 <meta property="og:url" content="{{ request.url }}">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score">
+{% if mode == 'waldorf' %}
+<meta name="twitter:title" content="Two grumpy developers rated my code {{ score or '?' }}/100 &#x1F474;&#x1F474;">
+{% else %}
+<meta name="twitter:title" content="My human-written code got a {{ score or '?' }}/100 Roast Score &#x1F525;">
+{% endif %}
 <meta name="twitter:description" content="{{ preview }}">
 {% endblock %}
 
@@ -106,12 +114,15 @@
             </div>
             <div class="w-px h-4 bg-white/10 self-center"></div>
             <div class="flex items-center gap-2">
-                {% if mode == 'roast' %}
-                <iconify-icon icon="lucide:flame" class="text-[#FF6B35]"></iconify-icon>
-                <span class="text-xs font-bold uppercase tracking-widest text-white/60">Roast Mode</span>
-                {% else %}
+                {% if mode == 'waldorf' %}
+                <span class="text-[#FF6B35]">&#x1F474;</span>
+                <span class="text-xs font-bold uppercase tracking-widest text-white/60">Statler &amp; Waldorf</span>
+                {% elif mode == 'serious' %}
                 <iconify-icon icon="lucide:clipboard-check" class="text-blue-400"></iconify-icon>
                 <span class="text-xs font-bold uppercase tracking-widest text-white/60">Serious Review</span>
+                {% else %}
+                <iconify-icon icon="lucide:flame" class="text-[#FF6B35]"></iconify-icon>
+                <span class="text-xs font-bold uppercase tracking-widest text-white/60">Roast Mode</span>
                 {% endif %}
             </div>
             {% if roast.severity and mode == 'roast' %}
@@ -128,7 +139,7 @@
         </div>
 
         <!-- Rendered Roast Content -->
-        <div class="prose max-w-none">
+        <div class="prose max-w-none {% if mode == 'waldorf' %}waldorf-dialogue{% endif %}" id="roast-output">
             {{ roast_content | safe }}
         </div>
 
@@ -164,7 +175,7 @@
             Share This Roast
         </button>
         {% endif %}
-        <a href="https://twitter.com/intent/tweet?text=My%20code%20got%20a%20{{ score or '?' }}%2F100%20Roast%20Score%20%F0%9F%94%A5&url={{ request.url | urlencode }}" target="_blank" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#1DA1F2] hover:bg-[#1a91da] hover:scale-[1.02] active:scale-95 transition-all">
+        <a href="https://twitter.com/intent/tweet?text={% if mode == 'waldorf' %}Two%20grumpy%20developers%20rated%20my%20code%20{{ score or '?' }}%2F100%20%F0%9F%91%B4%F0%9F%91%B4{% else %}My%20code%20got%20a%20{{ score or '?' }}%2F100%20Roast%20Score%20%F0%9F%94%A5{% endif %}&url={{ request.url | urlencode }}" target="_blank" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#1DA1F2] hover:bg-[#1a91da] hover:scale-[1.02] active:scale-95 transition-all">
             <iconify-icon icon="ri:twitter-x-fill"></iconify-icon>
             Share on X
         </a>
@@ -172,15 +183,15 @@
             <iconify-icon icon="lucide:rotate-ccw"></iconify-icon>
             Roast Again
         </a>
-        {% if mode == 'roast' %}
-        <a href="/" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#FF6B35]/10 border border-[#FF6B35]/20 text-[#FF6B35] hover:bg-[#FF6B35]/20 transition-all">
-            <iconify-icon icon="lucide:shield-check"></iconify-icon>
-            Serious Review
-        </a>
-        {% else %}
+        {% if mode == 'serious' %}
         <a href="/" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#FF6B35]/10 border border-[#FF6B35]/20 text-[#FF6B35] hover:bg-[#FF6B35]/20 transition-all">
             <iconify-icon icon="lucide:flame"></iconify-icon>
             Try a Roast
+        </a>
+        {% else %}
+        <a href="/" class="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl font-bold bg-[#FF6B35]/10 border border-[#FF6B35]/20 text-[#FF6B35] hover:bg-[#FF6B35]/20 transition-all">
+            <iconify-icon icon="lucide:shield-check"></iconify-icon>
+            Serious Review
         </a>
         {% endif %}
     </div>
@@ -204,6 +215,23 @@ function copyShareLink() {
         setTimeout(() => { toast.classList.add('hidden'); }, 3000);
     });
 }
+
+// Style Waldorf dialogue with alternating tints
+(function() {
+    const output = document.getElementById('roast-output');
+    if (!output || !output.classList.contains('waldorf-dialogue')) return;
+    const paragraphs = output.querySelectorAll('p');
+    paragraphs.forEach(p => {
+        const text = p.textContent;
+        if (text.match(/^\s*\*?\*?Statler:?\*?\*?/i) || p.innerHTML.match(/^<strong>Statler/i)) {
+            p.classList.add('waldorf-line', 'statler-line');
+        } else if (text.match(/^\s*\*?\*?Waldorf:?\*?\*?/i) || p.innerHTML.match(/^<strong>Waldorf/i)) {
+            p.classList.add('waldorf-line', 'waldorf-line-alt');
+        } else if (text.match(/^\s*\*?\*?Both:?\*?\*?/i) || p.innerHTML.match(/^<strong>Both/i)) {
+            p.classList.add('waldorf-line', 'both-line');
+        }
+    });
+})();
 
 // Animate score gauge on load
 window.addEventListener('load', () => {

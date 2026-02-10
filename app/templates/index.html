@@ -73,15 +73,18 @@
                     </div>
                 </div>
 
-                <!-- Mode Toggle -->
+                <!-- Mode Selector -->
                 <div class="space-y-3">
                     <label class="text-xs font-bold uppercase tracking-widest text-white/40 ml-1">Modality</label>
                     <div class="flex p-1 bg-white/5 rounded-2xl border border-white/10">
                         <button type="button" id="mode-roast" class="flex-1 py-2 rounded-xl bg-white/10 text-sm font-bold flex items-center justify-center gap-2 shadow-sm transition-all">
-                            <iconify-icon icon="lucide:flame" class="text-[#FF6B35]"></iconify-icon> Roast Mode
+                            &#x1F525; Roast
+                        </button>
+                        <button type="button" id="mode-waldorf" class="flex-1 py-2 rounded-xl text-white/40 text-sm font-bold flex items-center justify-center gap-2 hover:text-white transition-all">
+                            &#x1F474; Statler &amp; Waldorf
                         </button>
                         <button type="button" id="mode-serious" class="flex-1 py-2 rounded-xl text-white/40 text-sm font-bold flex items-center justify-center gap-2 hover:text-white transition-all">
-                            <iconify-icon icon="lucide:clipboard-check"></iconify-icon> Serious Review
+                            &#x1F50D; Serious Review
                         </button>
                     </div>
                     <input type="hidden" name="mode" id="mode-input" value="roast">
@@ -143,27 +146,36 @@
 const MAX_CHARS = 15000;
 const MAX_LINES = 500;
 
-// Mode toggle
-document.getElementById('mode-roast').addEventListener('click', function() {
-    this.classList.add('bg-white/10', 'shadow-sm');
-    this.classList.remove('text-white/40');
-    const serious = document.getElementById('mode-serious');
-    serious.classList.remove('bg-white/10', 'shadow-sm');
-    serious.classList.add('text-white/40');
-    document.getElementById('mode-input').value = 'roast';
-    document.getElementById('severity-selector').parentElement.style.display = '';
-    document.getElementById('btn-text').textContent = 'ROAST MY HUMAN CODE';
-});
+// Mode toggle (three-way)
+const modeButtons = {
+    roast: document.getElementById('mode-roast'),
+    waldorf: document.getElementById('mode-waldorf'),
+    serious: document.getElementById('mode-serious')
+};
+const modeConfig = {
+    roast:   { label: 'ROAST MY HUMAN CODE', showSeverity: true },
+    waldorf: { label: 'UNLEASH THE HECKLERS', showSeverity: true },
+    serious: { label: 'START SERIOUS REVIEW', showSeverity: false }
+};
 
-document.getElementById('mode-serious').addEventListener('click', function() {
-    this.classList.add('bg-white/10', 'shadow-sm');
-    this.classList.remove('text-white/40');
-    const roast = document.getElementById('mode-roast');
-    roast.classList.remove('bg-white/10', 'shadow-sm');
-    roast.classList.add('text-white/40');
-    document.getElementById('mode-input').value = 'serious';
-    document.getElementById('severity-selector').parentElement.style.display = 'none';
-    document.getElementById('btn-text').textContent = 'START SERIOUS REVIEW';
+function setMode(mode) {
+    document.getElementById('mode-input').value = mode;
+    Object.entries(modeButtons).forEach(([key, btn]) => {
+        if (key === mode) {
+            btn.classList.add('bg-white/10', 'shadow-sm');
+            btn.classList.remove('text-white/40');
+        } else {
+            btn.classList.remove('bg-white/10', 'shadow-sm');
+            btn.classList.add('text-white/40');
+        }
+    });
+    const cfg = modeConfig[mode];
+    document.getElementById('btn-text').textContent = cfg.label;
+    document.getElementById('severity-selector').parentElement.style.display = cfg.showSeverity ? '' : 'none';
+}
+
+Object.entries(modeButtons).forEach(([mode, btn]) => {
+    btn.addEventListener('click', () => setMode(mode));
 });
 
 // Code stats

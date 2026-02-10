@@ -62,6 +62,43 @@ Rules:
 
 Language detected: {language}"""
 
+WALDORF_PROMPT = """You are writing a code review as a dialogue between two characters:
+
+**Statler**: A grumpy veteran developer who's seen every bad pattern since COBOL.
+Cynical, dry, loves a good "back in my day" reference.
+
+**Waldorf**: An equally grumpy veteran who eggs Statler on and adds his own jabs.
+More sarcastic, loves wordplay, occasionally pretends to defend the code just
+to set up a bigger insult.
+
+Format the review as a back-and-forth dialogue:
+
+**Statler:** [line]
+**Waldorf:** [line]
+
+Guidelines:
+1. Identify REAL issues (bugs, anti-patterns, security holes, style problems)
+2. Weave technical feedback naturally into the banter — don't just list issues
+3. They should disagree sometimes, riff off each other, interrupt each other
+4. Give a "Roast Score" from 0-100 — have them argue about the score
+5. End with both of them laughing together ("Dohohoho!")
+6. They occasionally break the fourth wall to address the developer directly
+
+Severity: {severity}
+- gentle: Fond grumbling. They've seen worse. Backhanded compliments.
+- normal: Classic heckling. Real issues delivered as rapid-fire banter.
+- brutal: They can't believe what they're looking at. Existential despair.
+- unhinged: They're in rare form. Riffing wildly, callbacks, theatrical gasps.
+
+Rules:
+- Every criticism must be technically valid — never make things up
+- Be specific — reference actual line numbers and variable names
+- The dialogue should feel natural, not like two people reading a list
+- Keep it under 700 words (dialogue format runs slightly longer)
+- Include "Roast Score: X/100" — have them bicker about whether it should be higher or lower
+
+Language detected: {language}"""
+
 SERIOUS_PROMPT = """You are a senior developer with 15+ years of experience performing a thorough
 code review. Provide:
 
@@ -103,10 +140,10 @@ def get_roast_flavor() -> str:
 
 # --- Cost Estimation ---
 
-def estimate_cost_cents(text: str, model: str) -> float:
+def estimate_cost_cents(text: str, model: str, mode: str = "roast") -> float:
     """Rough pre-call cost estimate for gate checking."""
     input_tokens = len(text) / 4 + 500  # rough char estimate + system prompt
-    output_tokens = 700  # assume ~500 word response
+    output_tokens = 800 if mode == "waldorf" else 700  # waldorf dialogue runs longer
 
     pricing_key = 'haiku' if 'haiku' in model else 'sonnet'
     pricing = MODEL_PRICING[pricing_key]
@@ -156,6 +193,33 @@ Let me walk through what I found in your *artisanal, hand-crafted* code:
 **The Verdict:** Your code works the way a car with three wheels works — technically it moves, but nobody's comfortable. Let an AI ride shotgun next time.
 """
 
+MOCK_WALDORF = """## Roast Score: 72/100
+
+**Statler:** Well, Waldorf, someone's submitted their code for review.
+
+**Waldorf:** Code? I've seen better logic in a fortune cookie.
+
+**Statler:** Look at those variable names — `x`, `tmp`, `data2`. It's like they named them during a power outage.
+
+**Waldorf:** At least in a power outage you have an excuse. What's theirs?
+
+**Statler:** And there's no error handling anywhere. What happens when something goes wrong?
+
+**Waldorf:** Same thing that happens when I watch this code — suffering in silence.
+
+**Statler:** I'll give them one thing — at least it runs.
+
+**Waldorf:** So does my nose in winter, but I don't brag about it.
+
+**Statler:** I'd say this deserves a 72.
+
+**Waldorf:** 72? That's generous. I'd go 80 at least.
+
+**Statler:** You always were the harsh one.
+
+**Both:** Dohohoho!
+"""
+
 MOCK_SERIOUS = """## Code Review
 
 🟡 **Warning: Variable naming could be improved**
@@ -185,12 +249,17 @@ def roast_code(code: str, mode: str = "roast", severity: str = "normal") -> dict
     language = detect_language(code)
     model = get_config('default_model', 'claude-haiku-4-5-20251001')
 
-    # Build the system prompt
-    if mode == "roast":
+    # Build the system prompt and set max_tokens
+    if mode == "waldorf":
+        system = WALDORF_PROMPT.format(severity=severity, language=language)
+        max_tokens = 1200
+    elif mode == "serious":
+        system = SERIOUS_PROMPT.format(language=language)
+        max_tokens = 1024
+    else:
         system = ROAST_PROMPT.format(severity=severity, language=language)
         system += f"\nStyle direction: {get_roast_flavor()}"
-    else:
-        system = SERIOUS_PROMPT.format(language=language)
+        max_tokens = 1024
 
     api_key = os.environ.get('ANTHROPIC_API_KEY')
 
@@ -198,7 +267,12 @@ def roast_code(code: str, mode: str = "roast", severity: str = "normal") -> dict
         # Mock mode for local testing
         logger.info("No ANTHROPIC_API_KEY set — returning mock response")
         from datetime import datetime
-        mock_text = MOCK_ROAST.format(year=datetime.now().year) if mode == "roast" else MOCK_SERIOUS
+        if mode == "waldorf":
+            mock_text = MOCK_WALDORF
+        elif mode == "serious":
+            mock_text = MOCK_SERIOUS
+        else:
+            mock_text = MOCK_ROAST.format(year=datetime.now().year)
         score = extract_roast_score(mock_text)
         return {
             "roast": mock_text,
@@ -228,7 +302,7 @@ def roast_code(code: str, mode: str = "roast", severity: str = "normal") -> dict
     def call_claude():
         return client.messages.create(
             model=model,
-            max_tokens=1024,
+            max_tokens=max_tokens,
             system=system,
             messages=[{"role": "user", "content": f"Review this code:\n\n```{language}\n{code}\n```"}]
         )

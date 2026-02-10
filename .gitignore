@@ -23,9 +23,13 @@ data/
 *.db-wal
 *.db-shm
 
-# IDE
+# IDE / Tooling
 .vscode/
 .idea/
+.cursor/
+.claude/
+.agents/
+.superdesign/
 *.swp
 *.swo
 *~
