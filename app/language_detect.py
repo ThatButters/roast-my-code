@@ -5,7 +5,7 @@ import re
 LANGUAGE_PATTERNS = [
     ('python', [r'\bdef\s+\w+\s*\(', r'\bimport\s+\w+', r':\s*$', r'\bself\b', r'print\s*\(', r'if\s+__name__']),
     ('javascript', [r'\bfunction\s+\w+', r'\bconst\s+\w+', r'\blet\s+\w+', r'=>', r'console\.log', r'\brequire\(']),
-    ('typescript', [r':\s*(string|number|boolean|any)\b', r'\binterface\s+\w+', r'<[A-Z]\w*>', r'\bas\s+\w+']),
+    ('typescript', [r':\s*(string|number|boolean|any)\b', r'\binterface\s+\w+', r'<[A-Z]\w*>', r'\bas\s+\w+', r'\w+\s*:\s*\w+\s*[;,)]', r'\)\s*:\s*\w+\s*=>']),
     ('java', [r'\bpublic\s+(static\s+)?class\b', r'System\.out', r'\bvoid\s+\w+', r'@Override']),
     ('csharp', [r'\bnamespace\s+\w+', r'\busing\s+System', r'\bvar\s+\w+\s*=', r'\basync\s+Task']),
     ('go', [r'\bfunc\s+\w+', r'\bpackage\s+\w+', r':=', r'\bfmt\.\w+', r'\bgo\s+\w+']),
@@ -33,5 +33,9 @@ def detect_language(code: str) -> str:
 
     if not scores:
         return "unknown"
+
+    # TypeScript is a superset of JavaScript — if both match, prefer TS
+    if 'typescript' in scores and 'javascript' in scores:
+        scores['typescript'] += scores['javascript']
 
     return max(scores, key=scores.get)

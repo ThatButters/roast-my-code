@@ -1,7 +1,7 @@
 """Monthly budget tracking — monthly_budget table is the single source of truth for spend."""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.db import get_db
 from app.config import get_config
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 def get_current_month() -> str:
     """Return current month as 'YYYY-MM'."""
-    return datetime.utcnow().strftime('%Y-%m')
+    return datetime.now(timezone.utc).strftime('%Y-%m')
 
 
 def get_month_spend(month: str = None) -> float:

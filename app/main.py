@@ -194,12 +194,13 @@ def register_routes(app):
 
         budget_pct = (current_spend / budget_limit * 100) if budget_limit > 0 else 0
 
-        from datetime import datetime
+        from datetime import datetime, timezone
         import calendar
-        day_of_month = datetime.utcnow().day
+        now = datetime.now(timezone.utc)
+        day_of_month = now.day
         if day_of_month > 0 and current_spend > 0:
             daily_rate = current_spend / day_of_month
-            days_in_month = calendar.monthrange(datetime.utcnow().year, datetime.utcnow().month)[1]
+            days_in_month = calendar.monthrange(now.year, now.month)[1]
             projected = daily_rate * days_in_month
         else:
             projected = 0

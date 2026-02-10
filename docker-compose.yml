@@ -12,7 +12,7 @@ services:
     environment:
       - DATABASE_URL=sqlite:///data/roasts.db
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
       interval: 30s
       timeout: 5s
       retries: 3
